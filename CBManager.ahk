@@ -6,6 +6,32 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 global ClipHistory :=[]
 global CBxpos := 0
 global CBypos := 0
+startupLnk := A_Startup . "\" . SubStr(A_ScriptName, 1, -4) . ".lnk"
+scriptAdress := A_ScriptDir . "\" . A_ScriptName
+
+Menu, Tray, NoStandard
+Menu, Tray, Add, &Open, CBManager
+Menu, Tray, Add, Start With Windows, StartWithWin
+	if(FileExist(startupLnk))
+		Menu, Tray, ToggleCheck, Start With Windows
+Menu, Tray, Add, E&xit, ButtonExit
+Menu, Tray, Tip, CBManager
+if (!A_IsCompiled)
+	Menu, Tray, Icon, CB.ico
+Return
+
+ButtonExit:
+	ExitApp
+return
+
+StartWithWin:
+	if(FileExist(startupLnk))
+		FileDelete, %startupLnk%
+	else 
+		FileCreateShortcut, %scriptAdress%, %startupLnk%
+
+	Menu, Tray, ToggleCheck, Start With Windows
+return
 
 ~^x::
 ~^c::
@@ -20,6 +46,7 @@ global CBypos := 0
 return
 
 >#c::
+CBManager:
 	Gui, CB:New
 	Gui Add, Tab3, vTabNumber x0 y0 w430 h255 -Wrap, 1|2|3|4|5|6|7|8|9|10
 		loop, 10
