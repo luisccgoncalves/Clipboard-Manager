@@ -4,42 +4,72 @@ SendMode Input  ; Recommended for new scripts due to its superior speed and reli
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 global ClipHistory :=[]
+global CBxpos := 0
+global CBypos := 0
 
 ~^x::
 ~^c::
-    Sleep 200
-    FormatTime, TimeString, , hh:mm:ss dd/MM/yyyy
-    ClipHistory.InsertAt(1,{content:ClipBoard, timestamp:TimeString})
-    if ClipHistory.Length() > 10
-        ClipHistory.RemoveAt(11)
+	Sleep 200
+	if (ClipBoard != ClipHistory[1].content)
+	{
+	FormatTime, TimeString, , HH:mm:ss dd/MM/yyyy
+	ClipHistory.InsertAt(1,{content:ClipBoard, timestamp:TimeString})
+	if ClipHistory.Length() > 10
+		ClipHistory.RemoveAt(11)
+	}
 return
 
 >#c::
- 
-    Gui, CB:New
-    Gui Add, Tab3, vTabNumber x0 y0 w430 h255 -Wrap, 1|2|3|4|5|6|7|8|9|10
-        loop, 10
-    {
-        Gui Tab, %A_Index%
-        Gui Add, Button, x8 y23 w80 h24 gCBHCopy, &Copy
-        Gui Add, Text, x300 y23 w120 h23 +0x200, % ClipHistory[A_Index].timestamp
-        Gui Font,, Consolas
-        Gui Add, Edit, x8 y50 w415 h195 +Multi +ReadOnly vCBHContent%A_Index%
-        Gui Font
-        fcontent := ClipHistory[A_Index].content
-        GuiControl,, CBHContent%A_Index%,%fcontent%
-    }
+	Gui, CB:New
+	Gui Add, Tab3, vTabNumber x0 y0 w430 h255 -Wrap, 1|2|3|4|5|6|7|8|9|10
+		loop, 10
+	{
+		Gui Tab, %A_Index%
+		Gui Add, Button, x8 y23 w80 h24 gCBHCopy, &Copy
+		Gui Add, Button, x100 y23 w80 h24 gCBHDelete, &Delete
+		Gui Add, Text, x300 y23 w120 h23 +0x200 vCBHTimestamp%A_Index%
+		Gui Font,, Consolas
+		Gui Add, Edit, x8 y50 w415 h195 +Multi +ReadOnly vCBHContent%A_Index%
+		Gui Font
+		fcontent := ClipHistory[A_Index].content
+		GuiControl,, CBHContent%A_Index%,%fcontent%
+		ftimestamp := ClipHistory[A_Index].timestamp
+		GuiControl,, CBHTimestamp%A_Index%,%ftimestamp%
+	}
 
-    Gui CB:Show, w428 h255, ClipBoard History
+	if(!CBxpos)
+		CBxpos := (A_ScreenWidth/2)-(428/2)
+	if(!CBypos)
+		CBypos := (A_ScreenHeight/2)-(255/2)
+	Gui CB:Show, w428 h255 x%CBxpos% y%CBypos%, ClipBoard History
+	onMessage( 0x0047, Func("WM_WINDOWPOSCHANGED") )
+
 return
 
-CB:GuiEscape:
-CB:GuiClose:
-   Gui, CB:Destroy
+CBGuiEscape:
+CBGuiClose:
+	fcontent := ""
+	ftimestamp := ""
+	Gui, CB:Destroy
 return
 
 CBHCopy:
-    GuiControlGet, CurrentTab,, TabNumber
-    GuiControlGet, fCont,, CBHContent%CurrentTab%
-    ClipBoard := fCont
+	GuiControlGet, CurrentTab,, TabNumber
+	GuiControlGet, fCont,, CBHContent%CurrentTab%
+	if (fcont != "")
+	{
+		ClipBoard := fCont
+		fCont := ""
+	}
 return
+
+CBHDelete:
+	GuiControlGet, CurrentTab,, TabNumber
+	ClipHistory.RemoveAt(CurrentTab)
+	GuiControl, CB:, CBHContent%CurrentTab%,
+	GuiControl, CB:, CBHTimestamp%CurrentTab%,
+return
+
+WM_WINDOWPOSCHANGED() {
+  WinGetPos, CBxpos, CBypos
+}
