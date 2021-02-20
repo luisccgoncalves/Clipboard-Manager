@@ -25,4 +25,5 @@ Press <img src="https://i.imgur.com/FSaXfrM.png" width="15" height="15" />Win+Al
 ## License
 
 The logo was made by [Carolina Contreras](https://icon-icons.com/icon/clipboard-notes-list/104905) and is being distributed under the licence [CC 4.0](https://creativecommons.org/licenses/by/4.0/)
+
 The program was made by me, using [AutoHotKey](https://www.autohotkey.com/), and is being distributed under the [MIT licence](https://opensource.org/licenses/MIT).
