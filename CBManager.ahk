@@ -1,5 +1,5 @@
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-; #Warn  ; Enable warnings to assist with detecting common errors.
+#SingleInstance Force
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
@@ -10,7 +10,7 @@ startupLnk := A_Startup . "\" . SubStr(A_ScriptName, 1, -4) . ".lnk"
 scriptAdress := A_ScriptDir . "\" . A_ScriptName
 
 Menu, Tray, NoStandard
-Menu, Tray, Add, &Open, CBManager
+Menu, Tray, Add, &Open (Win+Alt+C), CBManager
 Menu, Tray, Add, Start With Windows, StartWithWin
 	if(FileExist(startupLnk))
 		Menu, Tray, ToggleCheck, Start With Windows
@@ -18,7 +18,10 @@ Menu, Tray, Add, E&xit, ButtonExit
 Menu, Tray, Tip, CBManager
 if (!A_IsCompiled)
 	Menu, Tray, Icon, CB.ico
-Return
+	
+TrayTip CBManager, ClipBoard Manager is running. `n Use Win+Alt+C to open it.
+
+return
 
 ButtonExit:
 	ExitApp
@@ -45,11 +48,22 @@ return
 	}
 return
 
->#c::
+!#c::
 CBManager:
+
+	tabNr := ClipHistory.Length()
+	if (!tabNr){
+		Msgbox, 64, ClipBoard Manager, Your clipboard history is empty.
+		return
+	}	
+	tabNames := ""
+
+	loop, %tabNr%
+		tabNames .= "Clip " . A_Index . "|"
+		
 	Gui, CB:New
-	Gui Add, Tab3, vTabNumber x0 y0 w430 h255 -Wrap, 1|2|3|4|5|6|7|8|9|10
-		loop, 10
+	Gui Add, Tab3, vTabNumber x0 y0 w430 h255 -Wrap, %tabNames% 
+		loop, %tabNr%
 	{
 		Gui Tab, %A_Index%
 		Gui Add, Button, x8 y23 w80 h24 gCBHCopy, &Copy
@@ -92,6 +106,7 @@ return
 
 CBHDelete:
 	GuiControlGet, CurrentTab,, TabNumber
+	CurrentTab := SubStr(CurrentTab, 6)
 	ClipHistory.RemoveAt(CurrentTab)
 	GuiControl, CB:, CBHContent%CurrentTab%,
 	GuiControl, CB:, CBHTimestamp%CurrentTab%,
