@@ -1,5 +1,6 @@
 #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
 #SingleInstance Force
+;#Warn  ; Enable warnings to assist with detecting common errors.
 SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
@@ -21,6 +22,7 @@ if (!A_IsCompiled)
 	
 TrayTip CBManager, ClipBoard Manager is running. `n Use Win+Alt+C to open it.
 
+OnClipboardChange("ClipChanged")
 return
 
 ButtonExit:
@@ -36,17 +38,15 @@ StartWithWin:
 	Menu, Tray, ToggleCheck, Start With Windows
 return
 
-~^x::
-~^c::
+ClipChanged(){
 	Sleep 200
-	if (ClipBoard != ClipHistory[1].content)
-	{
+	if (ClipBoard != ClipHistory[1].content){
 	FormatTime, TimeString, , HH:mm:ss dd/MM/yyyy
 	ClipHistory.InsertAt(1,{content:ClipBoard, timestamp:TimeString})
 	if ClipHistory.Length() > 10
 		ClipHistory.RemoveAt(11)
 	}
-return
+}
 
 !#c::
 CBManager:
