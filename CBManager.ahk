@@ -96,6 +96,7 @@ return
 
 CBHCopy:
 	GuiControlGet, CurrentTab,, TabNumber
+	CurrentTab := SubStr(CurrentTab, 6)
 	GuiControlGet, fCont,, CBHContent%CurrentTab%
 	if (fcont != "")
 	{
